@@ -1,4 +1,0 @@
-====================[pyfreq, ver: alpha]====================
-File read: {$filename}
-Operation: $status
-=====================[Frequency Chart]======================
