@@ -7,8 +7,15 @@ if "-f" in sys.argv:
         if sys.argv[i] == "-f":
             filepath = sys.argv[i+1]
 
-with open(filepath, 'r', encoding='utf-8') as file:
-    content = file.read()
+    with open(filepath, 'r', encoding='utf-8') as file:
+        content = file.read()
+elif "-t" in sys.argv:
+    for i in range(len(sys.argv)):
+        if sys.argv[i] == "-t":
+            content = sys.argv[i+1]
+    filepath = f"command argument: {content}"
+else:
+    raise Exception("Error: No input mode is selected.")
 
 
 class mode:
@@ -78,10 +85,10 @@ class mode:
         frequency = {}
         for i in content:
             if i.isalpha():
-                if i not in frequency:
-                    frequency[i] = 1
+                if i.lower() not in frequency:
+                    frequency[i.lower()] = 1
                 else:
-                    frequency[i] += 1
+                    frequency[i.lower()] += 1
         return frequency
 
     def alphanumeric(self, content: str):
@@ -106,7 +113,16 @@ if "-m" in sys.argv:
     for i in range(len(sys.argv)):
         if sys.argv[i] == "-m":
             searchmode = sys.argv[i+1]
+    modes = mode()
+    letters = modes.callfunc(searchmode, content)
+elif "-p" in sys.argv:
+    for i in range(len(sys.argv)):
+        if sys.argv[i] == "-p":
+            plugin_name = sys.argv[i+1]
+    plugin = __import__(f"plugins.{plugin_name}", globals(), locals(), [''], 0)
+    letters = plugin.main(content, mode)
+    searchmode = f"plugin: {plugin_name}"
+else:
+    raise Exception("Error: No mode/plugin selected.")
 
-modes = mode()
-letters = modes.callfunc(searchmode, content)
 cout(letters, filepath, searchmode)
