@@ -105,7 +105,7 @@ class mode:
         info = {}
         info["word count"] = sum(list(self.alphawords(content).values()))
         info["character count"] = len(content)
-        info["paragraph count"] = len(content.split("\n"))
+        info["paragraph count"] = sum([1 if content.split("\n")[i] != '' else 0 for i in range(len(content.split("\n")))])
         return info
 
 searchmode = "all"
