@@ -109,7 +109,4 @@ if "-m" in sys.argv:
 
 modes = mode()
 letters = modes.callfunc(searchmode, content)
-if searchmode != "text_info":
-    cout(letters, filepath)
-else:
-    print(letters)
+cout(letters, filepath, searchmode)
