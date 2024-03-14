@@ -1,9 +1,8 @@
 import time
 start = time.perf_counter()
-
 import sys
 from console_handler import *
-
+import string
 
 filepath = ""
 searchmode = ""
@@ -12,14 +11,14 @@ letters = ""
 lower = False
 class mode:
     def __init__(self):
-        self.callfunction = {self.alphawords: "alphawords",
+        self.callfunction = {self.words: "words",
                              self.numeric: "numeric",
                              self.all: "all",
                              self.alpha: "alpha",
                              self.alphanumeric: "alphanumeric",
                              self.text_info: "text_info"
                              }
-
+        self.result = {}
     def callfunc(self, freqmode: str, content):
         for key, value in self.callfunction.items():
             if value == freqmode:
@@ -38,21 +37,14 @@ class mode:
                 result[i] = 1
         return result
 
-
-    def alphawords(self, content: str):
-        primary = content.split(" ")
+    def words(self, content: str):
+        primary = content.split("\n")
         wordlist = []
         for i in range(len(primary)):
-            wordlist += primary[i].split("\n")
+            wordlist += primary[i].split(" ")
         for i in range(len(wordlist)):
-            sep_word = list(wordlist[i])
-            offset = 0
-            for j in range(len(sep_word)):
-                if not sep_word[j-offset].isalpha():
-                    del sep_word[j-offset]
-                    offset += 1
-            if len(sep_word) > 0:
-                wordlist[i] = "".join(sep_word)
+            for char in string.punctuation + "’‘“”—•":
+                wordlist[i] = wordlist[i].replace(char, '')
         frequency = self.getResult(wordlist)
         return frequency
 
@@ -86,7 +78,7 @@ class mode:
 
     def text_info(self, content: str):
         info = {}
-        info["word count"] = sum(list(self.alphawords(content).values()))
+        info["word count"] = sum(list(self.words(content).values()))
         info["character count"] = len(content)
         info["paragraph count"] = sum([1 if content.split("\n")[i] != '' else 0 for i in range(len(content.split("\n")))])
         return info

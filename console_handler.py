@@ -10,6 +10,8 @@ def cout(freq: dict, filename: str, mode: str):
     global prompt
     block = "|"
     output = ""
+    if '' in freq:
+        del freq['']
     freq = ascdictsort(freq)
     maxlen = 0
     maxval = list(freq.values())[0]
