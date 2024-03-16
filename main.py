@@ -9,6 +9,7 @@ searchmode = ""
 content = ""
 letters = ""
 lower = False
+page_size = 10
 class mode:
     def __init__(self):
         self.callfunction = {self.words: "words",
@@ -43,7 +44,7 @@ class mode:
         for i in range(len(primary)):
             wordlist += primary[i].split(" ")
         for i in range(len(wordlist)):
-            for char in string.punctuation + "’‘“”—•":
+            for char in string.punctuation + "’‘“”—•…":
                 wordlist[i] = wordlist[i].replace(char, '')
         frequency = self.getResult(wordlist)
         return frequency
@@ -84,6 +85,20 @@ class mode:
         return info
 
 
+if "-h" in sys.argv or "--help" in sys.argv or "help" in sys.argv or len(sys.argv) == 1:
+    output = []
+    output += ["PyFreq Help Panel"]
+    output += ["This is the help menu. You get here with the [-h], [--help] flag, or simply not passing any arguments whatsoever.\n"]
+    output += ["Flags:"]
+    output += ["[-f <filepath>]: specify file path of file, file needs to be .txt, cannot be used with [-t]."]
+    output += ['[-t <string>]: input string of words into the program, cannot be used with [-f]. String must be enclosed in ""']
+    output += [f'[-m <{"/".join(list(mode().callfunction.values()))}>]: input mode to be used for processing, cannot be used with [-p]']
+    output += ["[-p <plugin name>]: input plugin name to be used for processing, cannot be used with [-m]. do not add file extension."]
+    output += ["[--nocap]: all results will be calculated in lower case only."]
+    output += ["[--page_size <int>]: specify amount of results to show per page."]
+    print("\n".join(output))
+    sys.exit(0)
+
 if "-f" in sys.argv:
     for i in range(len(sys.argv)):
         if sys.argv[i] == "-f":
@@ -101,6 +116,11 @@ else:
 if "--nocap" in sys.argv:
     lower = True
 
+if "--page_size" in sys.argv:
+    for i in range(len(sys.argv)):
+        if sys.argv[i] == "--page_size":
+            page_size = int(sys.argv[i+1])
+
 if "-m" in sys.argv:
     for i in range(len(sys.argv)):
         if sys.argv[i] == "-m":
@@ -117,7 +137,7 @@ elif "-p" in sys.argv:
 else:
     raise Exception("Error: No operation mode defined.")
 
-_ = cout(letters, filepath, searchmode)
+_ = cout(letters, filepath, searchmode, page_size)
 
 end = time.perf_counter()
 print(f"Runtime: {end-start}")
