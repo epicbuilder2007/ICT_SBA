@@ -2,7 +2,6 @@ import time
 start = time.perf_counter()
 import sys
 from console_handler import *
-import string
 
 filepath = ""
 searchmode = ""
@@ -23,7 +22,7 @@ class mode:
     def callfunc(self, freqmode: str, content):
         for key, value in self.callfunction.items():
             if value == freqmode:
-                letter = key(content)
+                letter = self.getResult(key(content))
                 return letter
 
         raise Exception(f"mode {freqmode} does not exist.")
@@ -41,41 +40,41 @@ class mode:
     def words(self, content: str):
         primary = content.split("\n")
         wordlist = []
-        for i in range(len(primary)):
-            wordlist += primary[i].split(" ")
-        for i in range(len(wordlist)):
-            for char in string.punctuation + "’‘“”—•…":
-                wordlist[i] = wordlist[i].replace(char, '')
-        frequency = self.getResult(wordlist)
-        return frequency
+        for i in primary:
+            if i != '':
+                para = i.split(" ")
+                for j in para:
+                    word = list(j)
+                    for k in range(len(word)):
+                        if not word[k].isalpha():
+                            word[k] = ''
+                    word = ''.join(word)
+                    wordlist += [word]
+        return wordlist
 
     def numeric(self, content: str):
         finalstring = ""
         for i in content:
             if i.isnumeric():
                 finalstring += i
-        frequency = self.getResult(list(finalstring))
-        return frequency
+        return finalstring
 
     def all(self, content: str):
-        frequency = self.getResult(list(content))
-        return frequency
+        return list(content)
 
     def alpha(self, content: str):
         finalstring = ""
         for i in content:
             if i.isalpha():
                 finalstring += i
-        frequency = self.getResult(list(finalstring))
-        return frequency
+        return list(finalstring)
 
     def alphanumeric(self, content: str):
         finalstring = ""
         for i in content:
             if i.isalpha() or i.isnumeric():
                 finalstring += i
-        frequency = self.getResult(list(finalstring))
-        return frequency
+        return list(finalstring)
 
     def text_info(self, content: str):
         info = {}
@@ -83,6 +82,7 @@ class mode:
         info["character count"] = len(content)
         info["paragraph count"] = sum([1 if content.split("\n")[i] != '' else 0 for i in range(len(content.split("\n")))])
         return info
+    
 
 
 if "-h" in sys.argv or "--help" in sys.argv or "help" in sys.argv or len(sys.argv) == 1:
@@ -127,6 +127,7 @@ if "-m" in sys.argv:
             searchmode = sys.argv[i+1]
     modes = mode()
     letters = modes.callfunc(searchmode, content)
+    _ = cout(letters, filepath, searchmode, page_size)
 elif "-p" in sys.argv:
     for i in range(len(sys.argv)):
         if sys.argv[i] == "-p":
@@ -136,8 +137,6 @@ elif "-p" in sys.argv:
     letters = plugin.main(content, mode)
 else:
     raise Exception("Error: No operation mode defined.")
-
-_ = cout(letters, filepath, searchmode, page_size)
 
 end = time.perf_counter()
 print(f"Runtime: {end-start}")
