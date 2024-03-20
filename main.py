@@ -57,7 +57,7 @@ class mode:
         for i in content:
             if i.isnumeric():
                 finalstring += i
-        return finalstring
+        return list(finalstring)
 
     def all(self, content: str):
         return list(content)
