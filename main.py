@@ -1,6 +1,7 @@
 import time
 start = time.perf_counter()
 import sys
+import os
 from console_handler import *
 
 filepath = ""
@@ -15,10 +16,10 @@ class mode:
                              self.numeric: "numeric",
                              self.all: "all",
                              self.alpha: "alpha",
-                             self.alphanumeric: "alphanumeric",
-                             self.text_info: "text_info"
                              }
         self.result = {}
+        self.lower = False
+        self.mode = ""
     def callfunc(self, freqmode: str, content):
         for key, value in self.callfunction.items():
             if value == freqmode:
@@ -30,7 +31,7 @@ class mode:
     def getResult(self, data: list):
         result = {}
         for i in data:
-            i = i.lower() if lower else i
+            i = i.lower() if self.lower else i
             if i in result:
                 result[i] += 1
             else:
@@ -57,7 +58,7 @@ class mode:
         for i in content:
             if i.isnumeric():
                 finalstring += i
-        return list(finalstring)
+        return finalstring
 
     def all(self, content: str):
         return list(content)
@@ -68,24 +69,13 @@ class mode:
             if i.isalpha():
                 finalstring += i
         return list(finalstring)
-
-    def alphanumeric(self, content: str):
-        finalstring = ""
-        for i in content:
-            if i.isalpha() or i.isnumeric():
-                finalstring += i
-        return list(finalstring)
-
-    def text_info(self, content: str):
-        info = {}
-        info["word count"] = sum(list(self.words(content).values()))
-        info["character count"] = len(content)
-        info["paragraph count"] = sum([1 if content.split("\n")[i] != '' else 0 for i in range(len(content.split("\n")))])
-        return info
+    
+    def cout(self, content: dict, filename: str, mode: str, page_size: int):
+        cout(content, filename, mode, page_size)
     
 
 
-if "-h" in sys.argv or "--help" in sys.argv or "help" in sys.argv or len(sys.argv) == 1:
+if "-h" in sys.argv or "--help" in sys.argv or "help" in sys.argv:
     output = []
     output += ["PyFreq Help Panel"]
     output += ["This is the help menu. You get here with the [-h], [--help] flag, or simply not passing any arguments whatsoever.\n"]
@@ -110,8 +100,6 @@ elif "-t" in sys.argv:
         if sys.argv[i] == "-t":
             content = sys.argv[i+1]
     filepath = f"command argument - {content}"
-else:
-    raise Exception("Error: No text input defined.")
 
 if "--nocap" in sys.argv:
     lower = True
@@ -134,9 +122,38 @@ elif "-p" in sys.argv:
             plugin_name = sys.argv[i+1]
             searchmode = f"plugin - {plugin_name}"
     plugin = __import__(f"plugins.{plugin_name}", globals(), locals(), [''], 0)
-    letters = plugin.main(content, mode)
-else:
-    raise Exception("Error: No operation mode defined.")
+    plugin.main(content, mode, filepath)
+
+if len(sys.argv) == 1:
+    print("====================[pyfreq, ver: alpha]====================")
+    contentmode = input("file/text: ")
+    if contentmode.lower() == "file":
+        filepath = input("File name: ")
+        with open(filepath, 'r', encoding='utf-8') as file:
+            content = file.read()
+    elif contentmode.lower() == "text":
+        content = input("Text: ")
+        filepath = f"command argument - {content}"
+    modes = mode()
+    selectedmode = ""
+    modelist = []
+    modelist += list(modes.callfunction.values())
+    for i in os.listdir("plugins"):
+        if str(i) != "__init__.py" and i != "__pycache__":
+            modelist += [i]
+    menu = ""
+    for i in range(len(modelist)):
+        menu += f"[{i}]. {modelist[i]}\n"
+    print(menu)
+    selectedmode = modelist[int(input("Choose mode number"))]
+    if selectedmode not in modes.callfunction.values():
+        plugin = __import__(f"plugins.{selectedmode}".replace('.py', ''), globals(), locals(), [''], 0)
+        letters = plugin.main(content, mode, filepath)
+    else:
+        letters = modes.callfunc(selectedmode, content)
+        _ = cout(letters, filepath, selectedmode, page_size)
+
+
 
 end = time.perf_counter()
 print(f"Runtime: {end-start}")
