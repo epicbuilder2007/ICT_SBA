@@ -81,9 +81,7 @@ class BTree:
         def repos(self):
             # Rules for a max heap
             # 1. Everything below a node must be smaller than itself
-            # 2. Everything above a node must be larger than itself
-
-            # We first check rule 1.
+            # Check rule 1.
             if self.left.val > self.val:
                 # Rule 1 is now violated, correct by swapping the positions of left node and current node
 
@@ -103,19 +101,74 @@ class BTree:
                 # Then, we change our parent to our left node
                 self.setparent(self.left)
 
-                # Swap our left node with theirs
-                temp = self.left.left
-                self.left.setleft()
+                # Set our left node to their left node
+                self.setleft(self.parent.left)
+                
+                # Set our new left node's parent to us
+                self.left.setparent(self)
+                
+                # Set right node parent to our new parent node
+                self.right.setparent(self.parent)
+                
+                # set parent left to us
+                self.parent.setleft(self)
+                
+                # we cannot move our right nodes without orphaning the other right node
+                # so we need to temporarily save our own right node to a variable
+                tempright = self.right
+                
+                # then we set our own right node to our parent's right node
+                self.setright(self.parent.right)
+                
+                # set parent right node to saved right node
+                self.parent.setright(tempright)
+                
+                # set our new right node's parent to our own
+                self.right.setparent(self)
+                
+            elif self.right.val > self.val:
+                                # Rule 1 is now violated, correct by swapping the positions of left node and current node
 
+                # We do this by first getting our parent node to reference our left node as its child node
+                # But first, we have to check which position we are in.
+                position = "left" if self.parent.left == self else "right"
 
+                # Then, we link our parent with our child
+                if position == "left":
+                    self.parent.setleft(self.right)
+                else:
+                    self.parent.setright(self.right)
 
-            if self.right.val > self.val:
-                pass
+                # Then, we change the parent of our child to our parent
+                self.right.setparent(self.parent)
 
-            # Then we check rule 2.
-            if self.parent.val < self.val:
-                pass
+                # Then, we change our parent to our right node
+                self.setparent(self.right)
 
+                # Set our right node to their right node
+                self.setright(self.parent.right)
+                
+                # Set our new right node's parent to us
+                self.right.setparent(self)
+                
+                # Set left node parent to our new parent node
+                self.left.setparent(self.parent)
+                
+                # set parent right to us
+                self.parent.setright(self)
+                
+                # we cannot move our left nodes without orphaning the other left node
+                # so we need to temporarily save our own left node to a variable
+                templeft = self.left
+                
+                # then we set our own left node to our parent's left node
+                self.setleft(self.parent.left)
+                
+                # set parent left node to saved left node
+                self.parent.setleft(templeft)
+                
+                # set our new left node's parent to our own
+                self.left.setparent(self)
 
     def TreeGen(self, dictionary: dict):
         # We assume items inside the dictionary are all payload: value
