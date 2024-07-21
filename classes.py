@@ -1,5 +1,6 @@
+import os
 # Class that supplies the program with basic frequency functions
-class modes:
+class Modes:
     def __init__(self):
         self.callfunction = {self.words: "words",
                              self.numeric: "numeric",
@@ -60,8 +61,12 @@ class modes:
                 finalstring += i
         return list(finalstring)
 
+
 # Class that produces a sorted binary tree
 class BTree:
+    def __init__(self):
+        self.head = None
+
     class node:
         def __init__(self, val, par, left, right, payload):
             self.val = val
@@ -70,14 +75,6 @@ class BTree:
             self.right = right
             self.payload = payload
 
-        def setleft(self, node):
-            pass
-
-        def setright(self, node):
-            pass
-
-        def setparent(self, node):
-            pass
         def repos(self):
             # Rules for a max heap
             # 1. Everything below a node must be smaller than itself
@@ -91,96 +88,148 @@ class BTree:
 
                 # Then, we link our parent with our child
                 if position == "left":
-                    self.parent.setleft(self.left)
+                    self.parent.left = self.left
                 else:
-                    self.parent.setright(self.left)
+                    self.parent.right = self.left
 
                 # Then, we change the parent of our child to our parent
-                self.left.setparent(self.parent)
+                self.left.parent = self.parent
 
                 # Then, we change our parent to our left node
-                self.setparent(self.left)
+                self.parent = self.left
 
                 # Set our left node to their left node
-                self.setleft(self.parent.left)
-                
+                self.left = self.parent.left
+
                 # Set our new left node's parent to us
-                self.left.setparent(self)
-                
+                self.left.parent = self
+
                 # Set right node parent to our new parent node
-                self.right.setparent(self.parent)
-                
+                self.right.parent = self.parent
+
                 # set parent left to us
-                self.parent.setleft(self)
-                
+                self.parent.left = self
+
                 # we cannot move our right nodes without orphaning the other right node
                 # so we need to temporarily save our own right node to a variable
                 tempright = self.right
-                
-                # then we set our own right node to our parent's right node
-                self.setright(self.parent.right)
-                
-                # set parent right node to saved right node
-                self.parent.setright(tempright)
-                
-                # set our new right node's parent to our own
-                self.right.setparent(self)
-                
-            elif self.right.val > self.val:
-                                # Rule 1 is now violated, correct by swapping the positions of left node and current node
 
-                # We do this by first getting our parent node to reference our left node as its child node
+                # then we set our own right node to our parent's right node
+                self.right = self.parent.right
+
+                # set parent right node to saved right node
+                self.parent.right = tempright
+
+                # set our new right node's parent to our own
+                self.right.parent = self
+                
+            if self.right.val > self.val:
+                # Rule 1 is now violated, correct by swapping the positions of right node and current node
+
+                # We do this by first getting our parent node to reference our right node as its child node
                 # But first, we have to check which position we are in.
                 position = "left" if self.parent.left == self else "right"
 
                 # Then, we link our parent with our child
                 if position == "left":
-                    self.parent.setleft(self.right)
+                    self.parent.left = self.right
                 else:
-                    self.parent.setright(self.right)
+                    self.parent.right = self.right
 
                 # Then, we change the parent of our child to our parent
-                self.right.setparent(self.parent)
+                self.right.parent = self.parent
 
                 # Then, we change our parent to our right node
-                self.setparent(self.right)
+                self.parent = self.right
 
                 # Set our right node to their right node
-                self.setright(self.parent.right)
-                
+                self.right = self.parent.right
+
                 # Set our new right node's parent to us
-                self.right.setparent(self)
-                
+                self.right.parent = self
+
                 # Set left node parent to our new parent node
-                self.left.setparent(self.parent)
-                
+                self.left.parent = self.parent
+
                 # set parent right to us
-                self.parent.setright(self)
-                
+                self.parent.right = self
+
                 # we cannot move our left nodes without orphaning the other left node
                 # so we need to temporarily save our own left node to a variable
                 templeft = self.left
-                
+
                 # then we set our own left node to our parent's left node
-                self.setleft(self.parent.left)
-                
+                self.left = self.parent.left
+
                 # set parent left node to saved left node
-                self.parent.setleft(templeft)
-                
+                self.parent.left = templeft
+
                 # set our new left node's parent to our own
-                self.left.setparent(self)
+                self.left.parent = self
 
     def TreeGen(self, dictionary: dict):
         # We assume items inside the dictionary are all payload: value
         # The first key in the dictionary will be our tree head
         keys = list(dictionary.keys())
-        head = self.node(dictionary[keys[0]], None, None, None, keys[0])
+        self.head = self.node(dictionary[keys[0]], None, None, None, keys[0])
         del keys[0]
         for i in keys:
             # for every entry, we first construct a node
             newnode = self.node(dictionary[i], None, None, None, i)
 
-            cur = head
-            while
+            cur = self.head
+            while newnode.parent is not None:
+                # we can express whether it should go left or right by boolean
+                right = False if newnode.val <= cur.val else True
+
+                if right:
+                    if cur.right is None:
+                        cur.right = newnode
+                        newnode.parent = cur
+                    else:
+                        cur = cur.right
+                else:
+                    if cur.left is None:
+                        cur.left = newnode
+                        newnode.parent = cur
+                    else:
+                        cur = cur.left
+
+    # Recursive function that calls repos from the bottom up.
+    def heapify(self, node):
+        # work our way down to the last branch node
+        # this should be done by recursively calling ourselves
+        # check if child node is a leaf node
+        if node.left is not None:
+            if not ((node.left.left is None) and (node.left.right is None)):
+                self.heapify(node.left)
+
+        if node.right is not None:
+            if not ((node.right.left is None) and (node.right.right is None)):
+                self.heapify(node.right)
+
+        node.repos()
 
 
+# Class that supplies the program with plugin loading capabilities
+class PluginLoader:
+    def __init__(self):
+        # check if plugins folder exist
+        if not os.path.isdir("plugins"):
+            os.makedirs("plugins")
+
+        self.PDir = "plugins"
+
+    def import_plugin(self, plugin_name):
+        if os.path.exists(f"{self.PDir}/{plugin_name}.py"):
+            plugin = __import__(f"{self.PDir}.{plugin_name}", globals(), locals(), [''], 0)
+        else:
+            raise Warning(f"[PluginLoader.import_plugin WARNING] Plugin with name {plugin_name} not found! Overlooking error...")
+        return plugin
+
+    def list_plugins(self):
+        modelist = []
+        for i in os.listdir("plugins"):
+            if str(i) != "__init__.py" and i != "__pycache__":
+                modelist += [i]
+        return modelist

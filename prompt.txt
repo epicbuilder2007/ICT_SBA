@@ -1,5 +1,5 @@
 
-====================[pyfreq, ver: alpha]====================
+====================[PyFreq, ver: beta]====================
 File read: {$filename}
 Mode: $mode
 Operation: $status
