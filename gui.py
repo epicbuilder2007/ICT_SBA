@@ -5,6 +5,7 @@ from tkinter.scrolledtext import ScrolledText
 import os
 import classes
 Modes = classes.Modes()
+Sort = classes.Sort()
 PluginLoader = classes.PluginLoader()
 import console_handler
 import matplotlib.pyplot as mapo # mapo tofu lol
@@ -61,7 +62,7 @@ def Submit():
     else:
         print(Modes.callfunction)
         Modes.callfunc()
-        final = console_handler.ascdictsort(Modes.result)
+        final = Sort.quickdictsort(Modes.result)
         mapo.bar(list(final.keys()), list(final.values()), color="blue", width=0.25)
         mapo.xlabel(Modes.mode)
         mapo.ylabel("Frequency")

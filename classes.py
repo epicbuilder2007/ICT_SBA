@@ -1,4 +1,6 @@
 import os
+
+
 # Class that supplies the program with basic frequency functions
 class Modes:
     def __init__(self):
@@ -15,13 +17,6 @@ class Modes:
         self.filepath = ""
 
     def callfunc(self):
-        """
-        print(type(self.mode))
-        for key, value in self.callfunction.items():
-            print([ord(c) for c in self.mode], [ord(c) for c in value], print(type(value)), self.mode is value)
-            if value == self.mode:
-                self.getResult(key())"""
-
         if self.mode in self.callfunction:
             self.getResult(self.callfunction[self.mode]())
             return 0
@@ -243,3 +238,49 @@ class PluginLoader:
             if str(i) != "__init__.py" and i != "__pycache__":
                 modelist += [i]
         return modelist
+
+
+class Sort:
+    def __init__(self):
+        pass
+    
+    def quicksort(self, unsorted: list, castto: list):
+        pivot = unsorted[0]
+        pivotlist = unsorted[0]
+        lwing, rwing = [], []
+        lcast, rcast = [], []
+        for i in range(len(unsorted[1:])):
+            if unsorted[i+1] <= pivot:
+                rwing += [unsorted[i+1]]
+                rcast += [castto[i+1]]
+            else:
+                lwing += [unsorted[i+1]]
+                lcast += [castto[i+1]]
+        if not (len(lwing) <= 1 and len(rwing) <= 1):
+            if len(lwing) >= 2:
+                lwing, lcast = self.quicksort(lwing, lcast)
+            if len(rwing) >= 2:
+                rwing, rcast = self.quicksort(rwing, rcast)
+        sortval = lwing + [pivotlist] + rwing
+        sortcast = lcast + [castto[0]] + rcast
+        return sortval, sortcast
+    def quickdictsort(self, unsorted: dict):
+    # Thanks, Nelson, for the improvement idea
+    # This stores keys to the same value.
+        optdict = {}
+        for i, v in unsorted.items():
+            if v not in optdict:
+                optdict[v] = [i]
+            else:
+                optdict[v] += [i]
+
+        bundled = list(optdict.keys())
+        castto = list(optdict.values())
+
+        sortval, sortkey = self.quicksort(bundled, castto)
+        ascdict = {}
+        for k in range(len(sortkey)):
+            for i in range(len(sortkey[k])):
+                ascdict[sortkey[k][i]] = sortval[k]
+        return ascdict
+    
