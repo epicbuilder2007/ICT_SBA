@@ -2,34 +2,44 @@ import os
 # Class that supplies the program with basic frequency functions
 class Modes:
     def __init__(self):
-        self.callfunction = {self.words: "words",
-                             self.numeric: "numeric",
-                             self.all: "all",
-                             self.alpha: "alpha",
+        self.callfunction = {"words": self.words,
+                             "numeric": self.numeric,
+                             "all": self.all,
+                             "alpha": self.alpha,
                              }
         self.result = {}
         self.lower = False
         self.mode = ""
         self.content = ""
         self.letters = {}
+        self.filepath = ""
 
     def callfunc(self):
+        """
+        print(type(self.mode))
         for key, value in self.callfunction.items():
+            print([ord(c) for c in self.mode], [ord(c) for c in value], print(type(value)), self.mode is value)
             if value == self.mode:
-                self.letters = self.getResult(key())
+                self.getResult(key())"""
 
+        if self.mode in self.callfunction:
+            self.getResult(self.callfunction[self.mode]())
+            return 0
         raise Exception(f"mode {self.mode} does not exist.")
 
     def getResult(self, data: list):
-        result = {}
         for i in data:
             i = i.lower() if self.lower else i
-            if i in result:
-                result[i] += 1
+            if i in self.result:
+                self.result[i] += 1
             else:
-                result[i] = 1
-        return result
+                self.result[i] = 1
 
+    def clear(self):
+        self.result = {}
+        self.content = ""
+        self.letters = {}
+        self.filepath = ""
     def words(self):
         # i'll have to assume everything passed is already transformed into ascii
         for i in range(33, 127):

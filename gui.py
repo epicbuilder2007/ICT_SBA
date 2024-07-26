@@ -1,38 +1,75 @@
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
+from tkinter.scrolledtext import ScrolledText
 import os
 import classes
+Modes = classes.Modes()
+PluginLoader = classes.PluginLoader()
+import console_handler
+import matplotlib.pyplot as mapo # mapo tofu lol
 
 # Runtime Variables
-filepath = ""
-content = ""
-mode = ""
 plugin = False
+name = "Freqy! Beta 0.2.5"
 
 
 def import_file():
-    global filepath
-    global content
-    filepath = filedialog.askopenfilename(initialdir=os.getcwd(),
+    Modes.filepath = filedialog.askopenfilename(initialdir=os.getcwd(),
                                           title="Select a file...",
                                           filetypes=(("Text files",
                                                       "*.txt*"),
                                                      ("all files",
                                                       "*.*")))
-    with open(filepath, 'rb') as file:
-        content = file.read().decode('ascii', 'ignore')
+    with open(Modes.filepath, 'rb') as file:
+        Modes.content = file.read().decode('ascii', 'ignore')
+        logbox.addtext("[gui.import_file - INFO] Imported file " + Modes.filepath)
+
+
+def lowercasefunc():
+    Modes.lower = lowercase.state.get()
+    logbox.addtext("[lowercasefunc - INFO] -lower flag " + ("ENABLED" if Modes.lower else "DISABLED"))
+
+
+def EoSSelChange(event):
+    global plugin
+    selected = englishorspanish.curselection()
+    if len(selected) > 0:
+        if selected[0] == 0:
+            modeselection['values'] = list(Modes.callfunction.keys())
+            plugin = False
+            logbox.addtext("[EoSSelChange - INFO] Mode selection changed to: Built-in Modes")
+        else:
+            modeselection['values'] = PluginLoader.list_plugins()
+            plugin = True
+            logbox.addtext("[EoSSelChange - INFO] Mode selection changed to: Plugins")
+
+def MSSelChange(event):
+    Modes.mode = str(modeselection.get())
+    logbox.addtext("[MSSelChange - INFO] Set operation mode to: " + Modes.mode)
+
+
+def Submit():
+    if Modes.filepath == "":
+        Modes.content = textbox.get()
+        Modes.filepath = "Text Input"
+    logbox.addtext(f"Program activated with parameters: \n - file/text: {Modes.filepath if Modes.filepath != '' else Modes.content} \n - mode: {('PLUGIN ' if plugin else '') + Modes.mode} \n - lowercase only: {str(Modes.lower)}")
+    textbox.delete(0, 'end')
+    if plugin:
+        imported = PluginLoader.import_plugin(Modes.mode)
+        imported.main(Modes)
+    else:
+        print(Modes.callfunction)
+        Modes.callfunc()
+        final = console_handler.ascdictsort(Modes.result)
+        mapo.bar(list(final.keys()), list(final.values()), color="blue", width=0.25)
+        mapo.xlabel(Modes.mode)
+        mapo.ylabel("Frequency")
+        mapo.show()
+    Modes.clear()
 
 
 class CoreInterfaceElements:
-
-    class CoreFrame(tk.Frame):
-        def __init__(self, parent: tk.Tk):
-            parent.update()
-            super().__init__(parent, width=parent.winfo_width(), height=parent.winfo_height())
-            self.columnconfigure(index=0, weight=1)
-            self.columnconfigure(index=0, weight=1)
-
 
     class CoreButton(tk.Button):
         def __init__(self, parent, func):
@@ -49,7 +86,6 @@ class CoreInterfaceElements:
         def text(self, string):
             self.configure(text=string)
 
-
     class CoreListBox(tk.Listbox):
         def __init__(self, parent, options: list):
             super().__init__(parent, listvariable=tk.Variable(value=options), height=len(options))
@@ -62,82 +98,65 @@ class CoreInterfaceElements:
     
     class CoreCheckbox(ttk.Checkbutton):
         def __init__(self, parent, name, func):
-            super().__init__(parent, text=name, command=func, variable = tk.StringVar())
+            self.state = tk.BooleanVar()
+            super().__init__(parent, text=name, command=func, variable=self.state)
 
-Modes = classes.Modes()
-PluginLoader = classes.PluginLoader()
+    class LogBox(ScrolledText):
+        def __init__(self, parent, width, height):
+            super().__init__(parent, width=width, height=height)
+            self.insert(tk.END, f"{name} - Log started")
+            self.config(state='disabled')
+        def addtext(self, string):
+            self.config(state='normal')
+            self.insert(tk.END, "\n\n" + string)
+            self.config(state='disabled')
+
 
 main = tk.Tk()
 main.geometry('600x400')
-main.title("Freqy! Beta 0.2.0")
-frame = CoreInterfaceElements.CoreFrame(main)
-frame.grid_propagate(False)
+main.title(name)
+main.columnconfigure(index=0, weight=2)
+main.columnconfigure(index=1, weight=1)
 
 # Step 1
 
-import_label = CoreInterfaceElements.CoreLabel(frame)
+import_label = CoreInterfaceElements.CoreLabel(main)
 import_label.text("1. Import a file or enter a string.")
-import_label.grid_propagate(False)
 import_label.grid(column=0, row=0)
 
-import_button = CoreInterfaceElements.CoreButton(frame, import_file)
+import_button = CoreInterfaceElements.CoreButton(main, import_file)
 import_button.text("Import File...")
-import_label.grid_propagate(False)
 import_button.grid(column=1, row=0)
 
-textbox = tk.Entry(frame)
+textbox = tk.Entry(main, textvariable=tk.StringVar())
 textbox.grid(column=0, row=1)
-textbox.grid_propagate(True)
+
+lowercase = CoreInterfaceElements.CoreCheckbox(main, "Force All Lowercase", lowercasefunc)
+lowercase.grid(column=1, row=1)
 
 # Step 2
 
-modeselectlabel = CoreInterfaceElements.CoreLabel(frame)
+modeselectlabel = CoreInterfaceElements.CoreLabel(main)
 modeselectlabel.text("2. Choose a mode or plugin to use.")
-modeselectlabel.grid_propagate(False)
 modeselectlabel.grid(column=0, row=2)
 
-englishorspanish = CoreInterfaceElements.CoreListBox(frame, ["Built-in Modes", "Plugins"])
-englishorspanish.grid_propagate(True)
-englishorspanish.grid(column=1, row=2)
-
-modeselection = CoreInterfaceElements.CoreDropList(frame, ["placeholder"])
-modeselection.grid(column=0, row=3)
-
-
-def EoSSelChange(event):
-    selected = englishorspanish.curselection()
-    if len(selected) > 0 and selected[0] == 0:
-        modeselection['values'] = list(Modes.callfunction.values())
-        plugins = False
-    else:
-        modeselection['values'] = PluginLoader.list_plugins()
-        plugin = True
-
-
-def MSSelChange(event):
-    mode = modeselection.get()
-
+englishorspanish = CoreInterfaceElements.CoreListBox(main, ["Built-in Modes", "Plugins"])
+englishorspanish.grid(column=1, row=3)
 englishorspanish.bind('<<ListboxSelect>>', EoSSelChange)
+
+modeselection = CoreInterfaceElements.CoreDropList(main, ["placeholder"])
+modeselection.grid(column=0, row=3)
 modeselection.bind('<<ComboboxSelected>>', MSSelChange)
 
-# Step 3
+# Submit Form
 
-additionaloptionslabel = CoreInterfaceElements.CoreLabel(frame)
-additionaloptionslabel.text("3. Choose additional flags")
-additionaloptionslabel.grid_propagate(False)
-additionaloptionslabel.grid(column=0, row=4)
+submit = CoreInterfaceElements.CoreButton(main, Submit)
+submit.text("Generate Graph!")
+submit.grid(column=0, row=4)
 
-flagframe = CoreInterfaceElements.CoreFrame(frame)
-flagframe.grid_propagate(False)
-
-def lowercasefunc():
-    Modes.lower = True if lowercase.get() == 1 else False
-
-lowercase = CoreInterfaceElements.CoreCheckbox(frame, "lowercase only", lowercasefunc)
-lowercase.grid(column=0, row=6)
-flagframe.grid(column=0, row=5)
-
-frame.grid(column=0, row=0)
+# Logs
+logbox = CoreInterfaceElements.LogBox(main, width=50, height=10)
+logbox.grid(column=0, row=6,pady=10,)
 
 # Start Program
 main.mainloop()
