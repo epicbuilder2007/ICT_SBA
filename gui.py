@@ -7,7 +7,6 @@ import classes
 Modes = classes.Modes()
 Sort = classes.Sort()
 PluginLoader = classes.PluginLoader()
-import console_handler
 import matplotlib.pyplot as mapo # mapo tofu lol
 
 # Runtime Variables
@@ -62,14 +61,17 @@ def Submit():
     else:
         print(Modes.callfunction)
         Modes.callfunc()
-        final = Sort.quickdictsort(Modes.result)
+        final = Sort.heapsort(Modes.result)
+        fig = mapo.figure(figsize=(len(list(final.keys()))*0.3, 5))
         mapo.bar(list(final.keys()), list(final.values()), color="blue", width=0.25)
         mapo.xlabel(Modes.mode)
         mapo.ylabel("Frequency")
+        fig.tight_layout()
         mapo.show()
     Modes.clear()
 
 
+# this class is declared here so I don't have to import tkinter when I don't have to.
 class CoreInterfaceElements:
 
     class CoreButton(tk.Button):
@@ -113,51 +115,52 @@ class CoreInterfaceElements:
             self.config(state='disabled')
 
 
-main = tk.Tk()
-main.geometry('600x400')
-main.title(name)
-main.columnconfigure(index=0, weight=2)
-main.columnconfigure(index=1, weight=1)
+if __name__ == "__main__":
+    main = tk.Tk()
+    main.geometry('600x400')
+    main.title(name)
+    main.columnconfigure(index=0, weight=2)
+    main.columnconfigure(index=1, weight=1)
 
-# Step 1
+    # Step 1
 
-import_label = CoreInterfaceElements.CoreLabel(main)
-import_label.text("1. Import a file or enter a string.")
-import_label.grid(column=0, row=0)
+    import_label = CoreInterfaceElements.CoreLabel(main)
+    import_label.text("1. Import a file or enter a string.")
+    import_label.grid(column=0, row=0)
 
-import_button = CoreInterfaceElements.CoreButton(main, import_file)
-import_button.text("Import File...")
-import_button.grid(column=1, row=0)
+    import_button = CoreInterfaceElements.CoreButton(main, import_file)
+    import_button.text("Import File...")
+    import_button.grid(column=1, row=0)
 
-textbox = tk.Entry(main, textvariable=tk.StringVar())
-textbox.grid(column=0, row=1)
+    textbox = tk.Entry(main, textvariable=tk.StringVar())
+    textbox.grid(column=0, row=1)
 
-lowercase = CoreInterfaceElements.CoreCheckbox(main, "Force All Lowercase", lowercasefunc)
-lowercase.grid(column=1, row=1)
+    lowercase = CoreInterfaceElements.CoreCheckbox(main, "Force All Lowercase", lowercasefunc)
+    lowercase.grid(column=1, row=1)
 
-# Step 2
+    # Step 2
 
-modeselectlabel = CoreInterfaceElements.CoreLabel(main)
-modeselectlabel.text("2. Choose a mode or plugin to use.")
-modeselectlabel.grid(column=0, row=2)
+    modeselectlabel = CoreInterfaceElements.CoreLabel(main)
+    modeselectlabel.text("2. Choose a mode or plugin to use.")
+    modeselectlabel.grid(column=0, row=2)
 
-englishorspanish = CoreInterfaceElements.CoreListBox(main, ["Built-in Modes", "Plugins"])
-englishorspanish.grid(column=1, row=3)
-englishorspanish.bind('<<ListboxSelect>>', EoSSelChange)
+    englishorspanish = CoreInterfaceElements.CoreListBox(main, ["Built-in Modes", "Plugins"])
+    englishorspanish.grid(column=1, row=3)
+    englishorspanish.bind('<<ListboxSelect>>', EoSSelChange)
 
-modeselection = CoreInterfaceElements.CoreDropList(main, ["placeholder"])
-modeselection.grid(column=0, row=3)
-modeselection.bind('<<ComboboxSelected>>', MSSelChange)
+    modeselection = CoreInterfaceElements.CoreDropList(main, ["placeholder"])
+    modeselection.grid(column=0, row=3)
+    modeselection.bind('<<ComboboxSelected>>', MSSelChange)
 
-# Submit Form
+    # Submit Form
 
-submit = CoreInterfaceElements.CoreButton(main, Submit)
-submit.text("Generate Graph!")
-submit.grid(column=0, row=4)
+    submit = CoreInterfaceElements.CoreButton(main, Submit)
+    submit.text("Generate Graph!")
+    submit.grid(column=0, row=4)
 
-# Logs
-logbox = CoreInterfaceElements.LogBox(main, width=50, height=10)
-logbox.grid(column=0, row=6,pady=10,)
+    # Logs
+    logbox = CoreInterfaceElements.LogBox(main, width=50, height=10)
+    logbox.grid(column=0, row=6, pady=10, )
 
-# Start Program
-main.mainloop()
+    # Start Program
+    main.mainloop()

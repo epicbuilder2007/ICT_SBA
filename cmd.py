@@ -1,88 +1,86 @@
-import os
 import sys
 import classes
-from console_handler import cout
 
+# Initialize classes.
 Modes = classes.Modes()
 PluginLoader = classes.PluginLoader()
+ConsoleHandler = classes.ConsoleHandler()
+Sort = classes.Sort()
 
-# Runtime variables
-page_size = 10
+# Initialize variables
+name = "Freqy! Beta 0.2.5"
 
-if "-h" in sys.argv or "--help" in sys.argv or "help" in sys.argv:
-    output = []
-    output += ["Freqy! Help Panel"]
-    output += ["This is the help menu. You get here with the [-h], [--help] flag, or simply not passing any arguments whatsoever.\n"]
-    output += ["Flags:"]
-    output += ["[-f <filepath>]: specify file path of file, file needs to be .txt, cannot be used with [-t]."]
-    output += ['[-t <string>]: input string of words into the program, cannot be used with [-f]. String must be enclosed in ""']
-    output += [f'[-m <{"/".join(list(mode().callfunction.values()))}>]: input mode to be used for processing, cannot be used with [-p]']
-    output += ["[-p <plugin name>]: input plugin name to be used for processing, cannot be used with [-m]. do not add file extension."]
-    output += ["[--nocap]: all results will be calculated in lower case only."]
-    output += ["[--page_size <int>]: specify amount of results to show per page."]
-    print("\n".join(output))
-    sys.exit(0)
-
-if "-f" in sys.argv:
-    for i in range(len(sys.argv)):
-        if sys.argv[i] == "-f":
-            Modes.filepath = sys.argv[i+1]
-    with open(Modes.filepath, 'r', encoding='utf-8') as file:
-        Modes.content = file.read()
-elif "-t" in sys.argv:
-    for i in range(len(sys.argv)):
-        if sys.argv[i] == "-t":
-            Modes.content = sys.argv[i+1]
-    Modes.filepath = f"command argument - {content}"
-
-if "--nocap" in sys.argv:
-    Modes.lower = True
-
-if "--page_size" in sys.argv:
-    for i in range(len(sys.argv)):
-        if sys.argv[i] == "--page_size":
-            page_size = int(sys.argv[i+1])
-
-if "-m" in sys.argv:
-    for i in range(len(sys.argv)):
-        if sys.argv[i] == "-m":
-            Modes.mode = sys.argv[i+1]
-            
-    letters = Modes.callfunc()
-    _ = cout(letters, filepath, searchmode, page_size)
-    
-elif "-p" in sys.argv:
-    for i in range(len(sys.argv)):
-        if sys.argv[i] == "-p":
-            plugin_name = sys.argv[i+1]
-            Modes.mode = f"plugin - {plugin_name}"
-            plugin = PluginLoader.import_plugin(plugin_name)
-            plugin.main(Modes)
-
-if len(sys.argv) == 1:
-    print("====================[pyfreq, ver: alpha]====================")
-    contentmode = input("file/text: ")
-    if contentmode.lower() == "file":
-        Modes.filepath = input("File name: ")
-        with open(Modes.filepath, 'r', encoding='utf-8') as file:
-            Modes.content = file.read()
-    elif contentmode.lower() == "text":
-        Modes.content = input("Text: ")
-        Modes.filepath = f"command argument - {content}"
-    modelist = []
-    modelist += list(Modes.callfunction.keys())
-    for i in os.listdir("plugins"):
-        if str(i) != "__init__.py" and i != "__pycache__":
-            modelist += [i]
-    menu = ""
-    for i in range(len(modelist)):
-        menu += f"[{i}]. {modelist[i]}\n"
-    print(menu)
-    Modes.mode = modelist[int(input("Choose mode number"))]
-    if Modes.mode not in Modes.callfunction.keys():
-        plugin = PluginLoader.import_plugin(Modes.mode)
-        letters = plugin.main(Modes)
+if __name__ == "__main__":
+    # Parse arguments
+    argv = sys.argv.copy()
+    errors = []
+    # Get mode/plugin
+    if "-m" in argv:
+        try:
+            Modes.mode = argv[argv.index("-m")+1].lower()
+        except Exception as e:
+            errors += [e]
     else:
-        letters = Modes.callfunc()
-        
-        _ = cout(Modes.result, Modes.filepath, Modes.mode, page_size)
+        errors += [Exception("Mode/Plugin is not set.")]
+
+    # get content
+    if "-i" in argv:
+        try:
+            with open(argv[argv.index("-i")+1], 'r', encoding="utf-8") as file:
+                Modes.content = file.read()
+                Modes.filepath = argv[argv.index("-i")+1]
+        except FileNotFoundError:
+            Modes.content = argv[argv.index("-i")+1]
+            Modes.filepath = "Text Input"
+        except Exception as e:
+            errors += [e]
+    else:
+        errors += [Exception("File/Text Input is not set.")]
+
+    # optional flags
+    if "--page_size" in argv:
+        try:
+            ConsoleHandler.page_size = int(argv[argv.index("--page_size") + 1])
+        except Exception as e:
+            errors += [e]
+
+    if "--bar_char" in argv:
+        try:
+            if len(argv[argv.index("--bar_char")+1]) == 1:
+                ConsoleHandler.bar_char = argv[argv.index("--bar_char")+1]
+            else:
+                errors += [Exception("Invalid bar chart character")]
+        except Exception as e:
+            errors += [e]
+
+    if "--max_length" in argv:
+        try:
+            ConsoleHandler.max_len = int(argv[argv.index("--max_length")+1])
+        except Exception as e:
+            errors += [e]
+
+    if "--lower" in argv:
+        Modes.lower = True
+    else:
+        Modes.lower = False
+
+    if "--ascending" in argv:
+        Sort.increasing = True
+
+    if Modes.mode not in Modes.callfunction.keys():
+        if Modes.mode not in PluginLoader.list_plugins():
+            errors += [Exception("Invalid mode/plugin name.")]
+            raise ExceptionGroup(name + " failed to start with the following error(s):", errors)
+        else:
+            if len(errors) > 0:
+                raise ExceptionGroup(name + " failed to start with the following error(s):", errors)
+            plugin = PluginLoader.import_plugin(Modes.mode)
+            plugin.main(Modes)
+    else:
+        if len(errors) > 0:
+            raise ExceptionGroup(name + " failed to start with the following error(s):", errors)
+        Modes.callfunc()
+        final = Sort.heapsort(Modes.result)
+        ConsoleHandler.barplot(list(final.keys()), list(final.values()))
+
+

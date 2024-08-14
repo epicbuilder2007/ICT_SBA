@@ -1,10 +1,13 @@
-import console_handler
-
-with open(r"test files\comp.txt", 'rb') as file:
+import classes
+import time
+import tracemalloc
+sort=classes.Sort()
+filen = r"test files\hp1.txt"
+with open(filen, 'rb') as file:
     content = file.read()
 
 content = content.decode("ascii", "ignore")
-
+print(filen)
 # remove all non-alphabetical symbols from the text
 for i in range(33, 127):
     if not (91>i>64 or 123>i>96):
@@ -45,8 +48,30 @@ for i in temp:
         num = cache[i]
     translated += [num]
 
-# sort with quicksort algorithm
-val, key = console_handler.quicksort(translated, temp)
+"""# sort with quicksort algorithm
+val, key = sort.quicksort(translated, temp)
 print(val[::-1])
-print(key[::-1])
+print(key[::-1])"""
 
+# weave translated and temp into dict and send to heapsort for testing
+foo = {}
+for i in range(len(translated)):
+    foo[temp[i]] = translated[i]
+
+
+tracemalloc.start()
+
+start = time.perf_counter()
+returndict = sort.heapsort(foo)
+"""print(list(returndict.values()))
+print(list(returndict.keys()))"""
+print("heapsort: " + str(time.perf_counter()-start))
+
+start = time.perf_counter()
+returndict = sort.quickdictsort(foo)
+"""print(list(returndict.values()))
+print(list(returndict.keys()))"""
+print("quickdictsort: " + str(time.perf_counter()-start))
+
+for i in tracemalloc.take_snapshot().statistics('lineno'):
+    print(i)
