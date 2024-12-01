@@ -1,6 +1,6 @@
 
-====================[pyfreq, ver: alpha]====================
+====================[PyFreq, ver: beta]====================
 File read: {$filename}
 Mode: $mode
 Operation: $status
-====================[Frequency  Chart]====================
+====================[Frequency  Chart]=====================

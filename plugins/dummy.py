@@ -1,2 +1,2 @@
-def main(content: str):
-    return {"thing": 1}
+def main(a, b, c):
+    pass
