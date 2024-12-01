@@ -26,8 +26,9 @@ if __name__ == "__main__":
     # get content
     if "-i" in argv:
         try:
-            with open(argv[argv.index("-i")+1], 'r', encoding="utf-8") as file:
+            with open(argv[argv.index("-i")+1], 'rb') as file:
                 Modes.content = file.read()
+                Modes.content = Modes.content.decode("ascii", "ignore")
                 Modes.filepath = argv[argv.index("-i")+1]
         except FileNotFoundError:
             Modes.content = argv[argv.index("-i")+1]
@@ -75,7 +76,7 @@ if __name__ == "__main__":
             if len(errors) > 0:
                 raise ExceptionGroup(name + " failed to start with the following error(s):", errors)
             plugin = PluginLoader.import_plugin(Modes.mode)
-            plugin.main(Modes)
+            plugin.main(Modes, Sort, ConsoleHandler)
     else:
         if len(errors) > 0:
             raise ExceptionGroup(name + " failed to start with the following error(s):", errors)

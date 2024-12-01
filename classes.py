@@ -39,10 +39,10 @@ class Modes:
 
     def words(self) -> list:
         # i'll have to assume everything passed is already transformed into ascii
-        for i in range(33, 127):
-            if not (91 > i > 64 or 123 > i > 96):
-                self.content = self.content.replace(chr(i), "")
         self.content = self.content.replace("\r", "\n")
+        for i in range(128):
+            if not (91 > i > 64 or 123 > i > 96 or i in (13, 10, 32)):
+                self.content = self.content.replace(chr(i), "")
         self.content = self.content.split("\n")
         wordlist = []
 
@@ -79,8 +79,8 @@ class PluginLoader:
         self.PDir = "plugins"
 
     def import_plugin(self, plugin_name):
-        if os.path.exists(f"{self.PDir}/{plugin_name}.py"):
-            plugin = __import__(f"{self.PDir}.{plugin_name}", globals(), locals(), [''], 0)
+        if os.path.exists(f"{self.PDir}/{plugin_name}"):
+            plugin = __import__(f"{self.PDir}.{plugin_name[:-3]}", globals(), locals(), [''], 0)
         else:
             raise Warning(f"[PluginLoader.import_plugin WARNING] Plugin with name {plugin_name} not found! Overlooking error...")
         return plugin
